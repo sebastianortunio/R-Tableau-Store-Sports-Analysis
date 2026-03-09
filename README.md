@@ -1,4 +1,4 @@
-#  Data Analysis in R – Sports Store Analytics
+#  RETAIL SALES & PROFIABILITY ANALYSIS DASHBOARD & REPORT – R & Tableau
 ![image](https://github.com/user-attachments/assets/e0cc29cf-cd91-4034-893a-d283acfe1f79)
 
 
