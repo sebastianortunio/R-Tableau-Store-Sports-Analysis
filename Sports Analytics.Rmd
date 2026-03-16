@@ -1,14 +1,14 @@
 ---
-title: "Sports Store Analysis"
+title: "RETAIL SALES & PROFIABILITY ANALYSIS DASHBOARD & REPORT"
 author: "Sebastian Ortuno"
 date: "2025-06-13"
-output: word_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-# **Sports Store project**
+
 ### **Author: Sebastian Ortuno**
 ### **Tools used: RStudio, Tableau.**
 
@@ -17,10 +17,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ## **Project Overview:**
 
 
-In this project, I use R to analyze and clean data from an online sports store. The goal is to answer key business questions and extract insights on revenue, profit, customer ratings, and geographic trends.
+In this project, I use R to analyze and clean data from an online sports store. The goal is to answer key business questions and find useful insights about revenue, profit, customer ratings, and sales by state.
 
-Additionally, I created an interactive Tableau dashboard to gain a deeper understanding of the data. You can explore it here:  
-https://public.tableau.com/app/profile/sebastian.ortuno.barrero/viz/SportsSalesCustomerAnalysis/RatingsDashboard?publish=y
+Additionally, I created an interactive Tableau dashboard to better understand the data. You can explore it here:
+**https://public.tableau.com/app/profile/sebastian.ortuno.barrero/viz/SportsSalesCustomerAnalysis/RatingsDashboard?publish=y**
+
+This project tries to solve an important business problem: understanding what parts of the business are performing well and what parts need improvement. By looking at sales, profit, customer ratings, and location data, I try to find which sports bring the most value, which states have better results, and where the company may have opportunities to grow.
+
+This project also tries to solve the problem of limited visibility in business performance over time. By studying monthly revenue and profit trends, I try to find patterns during the year, compare strong and weak months, and understand customer behavior better. These results can help the business make better decisions about marketing, sales, and future planning.
 
 
 
@@ -28,18 +32,21 @@ https://public.tableau.com/app/profile/sebastian.ortuno.barrero/viz/SportsSalesC
 
 ## **Data Cleaning and Business Requirements:**
 
-### 1) KPIs: total revenue, profit, number of orders, profit margin.
-### 2) KPIs by sport: revenue, profit, orders, profit margin.
-### 3) Customer ratings: number, the percentage of ratings the company got from all the orders, average rating.
-### 4) Ratings distribution: number of orders by rating, revenue by rating, profit by rating, and profit margin by rating.
-### 5) Revenue, profit, and profit margin by State.
-### 6) Monthly profit trends and comparison with previous month.
-### 7) Monthly revenue trends and comparison with previous month.
-### 8) Conclussion
+### 1) Load libraries
+### 2) Data Exploratory
+### 3) Convert 'date' column (in text format) to a proper DATE type and store in 'Date_New'.
+### 4) KPIs: total revenue, profit, number of orders, profit margin.
+### 5) KPIs by sport: revenue, profit, orders, profit margin.
+### 6) Customer ratings: number, the percentage of ratings the company got from all the orders, average rating.
+### 7) Ratings distribution: number of orders by rating, revenue by rating, profit by rating, and profit margin by rating.
+### 8) Revenue, profit, and profit margin by State.
+### 9) Monthly profit trends and comparison with previous month.
+### 10) Monthly revenue trends and comparison with previous month.
+### 11) Executive Summary
 
 -----------------------------------------------------------------------------------------------------
 
-### **Libraries:**
+### **1) Load Libraries:**
 Before we start with the business requirements, I load the libraries needed for this project.
 
 ```{r}
@@ -52,7 +59,7 @@ library(knitr)
 library(scales)
 library(scales)
 ```
-## **Load and view the dataset**
+## **2) Data Exploratory**
 After loading the data, we begin our analysis by using the `head()` and `glimpse()` functions to explore the structure and content of the dataset.
 
 There are two tables: **orders** and **customers**.
@@ -63,20 +70,28 @@ There are two tables: **orders** and **customers**.
 
 
 ```{r}
-orders<-read.csv("C:/Users/sebas/OneDrive/Documents/NEC MASTERS/Projects Portfolio/Projects Portfolio/R Projects/Sports Analytics/Orders.csv")
+# Load the orders dataset from the local project directory
+orders <- read.csv("C:/Users/sebas/OneDrive/Documents/NEC MASTERS/Projects Portfolio/Projects Portfolio/R Projects/Sports Analytics/Orders.csv")
 
-customer<-read.csv("C:/Users/sebas/OneDrive/Documents/NEC MASTERS/Projects Portfolio/Projects Portfolio/R Projects/Sports Analytics/Customers.csv")
+# Load the customer dataset containing customer information
+customer <- read.csv("C:/Users/sebas/OneDrive/Documents/NEC MASTERS/Projects Portfolio/Projects Portfolio/R Projects/Sports Analytics/Customers.csv")
 
+# Preview the first rows of the orders dataset
 head(orders)
-head(customer)
-glimpse(orders)
-glimpse(customer)
 
+# Preview the first rows of the customer dataset
+head(customer)
+
+# Inspect the structure and variables of the orders dataset
+glimpse(orders)
+
+# Inspect the structure and variables of the customer dataset
+glimpse(customer)
 ```
 
 
 
-### **Convert 'date' column (in text format) to a proper DATE type and store in 'New_date'.**
+### **3) Convert 'date' column (in text format) to a proper DATE type and store in 'New_date'.**
 ```{r}
 # Convert the 'date' column to a Date type and create a new column 'New_date'
 orders<-orders%>%mutate(New_date=as_date(date, format="%m/%d/%Y")) 
@@ -84,15 +99,18 @@ orders<-orders%>%mutate(New_date=as_date(date, format="%m/%d/%Y"))
 orders<-orders%>%select("order_id","customer_id","sport","revenue","profit","shipping_cost",
                         "rating","New_date")
 ```
-### **1) KPIs: total revenue, profit, number of orders, profit margin.**
+### **4) KPIs: total revenue, profit, number of orders, profit margin.**
 ```{r}
-KPI<-orders%>%  # Start with the orders table
-  summarize(                   # Use summarize to calculate key metrics
-    Total_Revenue=sum(revenue),#Calculate revenue  
-    Total_Profit=sum(profit),  # Calculate profit
-    N_orders=n_distinct(order_id),# calculate number of orders orders using summarize
-    Profit_Margin=round((Total_Profit/Total_Revenue)*100,2)) #Calculate the profit margin 
+# Calculate main business metrics from the orders dataset
+KPI <- orders %>%                # Use the orders table
+  summarize(                     # Create summary metrics
+    Total_Revenue = sum(revenue),      # Total revenue from all orders
+    Total_Profit = sum(profit),        # Total profit from all orders
+    N_orders = n_distinct(order_id),   # Count the number of unique orders
+    Profit_Margin = round((Total_Profit / Total_Revenue) * 100, 2)  # Profit margin (%)
+  )
 
+# Display the results in a formatted table
 kable(KPI)
 ```
 - **Total Revenue:** $459,418.40  
@@ -108,73 +126,89 @@ On average, each order generates about $161.35 in revenue
 - **Profit Margin:** 62%  
 Very high margin — over half of every dollar earned is profit, which is excellent for retail.
 
-### **2) KPIs by sport: revenue, profit, orders, profit margin.**
+### **5) KPIs by sport: revenue, profit, orders, profit margin.**
 ```{r}
-KPI_sports<-orders%>% # Start with the 'orders' dataset
-  group_by(sport)%>% # Group data by 'sport' category
-  summarise(Total_Revenue=sum(revenue), # Sum revenue for each sport
-    Total_Profit=sum(profit),           # Sum profit for each sport
-    Total_Orders=n_distinct(order_id),  # Count unique orders per sport
-    Profit_Margin=round((Total_Profit/Total_Revenue)*100,2))%>%  # Calculate profit margin (%)
-    arrange(desc(Total_Profit), desc(Total_Orders))  # Order results by highest profit, then orders
-                      
-kable(KPI_sports) #Printing KPI_sports
+# Create KPI metrics by sport category
+KPI_sports <- orders %>%             # Start with the orders dataset
+  group_by(sport) %>%                # Group data by sport
+  summarise(
+    Total_Revenue = sum(revenue),        # Total revenue for each sport
+    Total_Profit = sum(profit),          # Total profit for each sport
+    Total_Orders = n_distinct(order_id), # Count unique orders
+    Profit_Margin = round((Total_Profit / Total_Revenue) * 100, 2) # Profit margin (%)
+  ) %>%
+  arrange(desc(Total_Profit), desc(Total_Orders))  # Sort by profit and number of orders
+
+# Show the results as a table
+kable(KPI_sports)
 
 ```
 
-**2.1 Profit by sports. **
+**5.1 Profit by sports. **
 
 ```{r}
 
+# Create a bar chart showing profit by sport
 ggplot(KPI_sports, aes(x = reorder(sport, -Total_Profit), y = Total_Profit, fill = sport)) +
-  geom_bar(stat = "identity") +
-  geom_text(aes(label = dollar(Total_Profit)), vjust = -0.5, size = 2.7, ) +
-  labs(title = "Profit by Sport", x = "Sport", y = "Total Profit") +
-  theme_minimal()+
-  theme(plot.title = element_text(hjust=0.5))
+  geom_bar(stat = "identity") +   # Create bars using total profit values
+  geom_text(aes(label = dollar(Total_Profit)),  # Add profit labels on top of bars
+            vjust = -0.5, size = 2.7) +
+  labs(title = "Profit by Sport",  # Chart title
+       x = "Sport",                # Label for x-axis
+       y = "Total Profit") +       # Label for y-axis
+  theme_minimal() +               # Use a clean minimal theme
+  theme(plot.title = element_text(hjust = 0.5))  # Center the title
 ```
 
-**2.2 Revenue by Sport**
+**5.2 Revenue by Sport**
 ```{r}
-ggplot(KPI_sports, aes(x=sport, y=Total_Revenue, fill=sport))+
-  geom_bar(stat="Identity")+
-  geom_text(aes(label = dollar(Total_Revenue)),vjust=-0.5, size= 2.8)+
-  labs(title = "Revenue by Sport", 
-       x= "Sport",
-       y="Revenue")+
-  theme_minimal() +
-  theme(plot.title = element_text(hjust=0.5))
+# Create a bar chart showing total revenue by sport
+ggplot(KPI_sports, aes(x = sport, y = Total_Revenue, fill = sport)) +
+  geom_bar(stat = "identity") +   # Draw bars using the revenue values
+  geom_text(aes(label = dollar(Total_Revenue)),  # Add revenue labels on top of bars
+            vjust = -0.5, size = 2.8) +
+  labs(title = "Revenue by Sport",  # Chart title
+       x = "Sport",                 # Label for x-axis
+       y = "Revenue") +             # Label for y-axis
+  theme_minimal() +                # Use a clean theme
+  theme(plot.title = element_text(hjust = 0.5))  # Center the chart title
 ```
 
-**2.3 Number of orders by Sport.**
+**5.3 Number of orders by Sport.**
 ```{r}
-
-ggplot(KPI_sports, aes(x=sport, y=Total_Orders, fill=sport))+
-  geom_bar(stat="identity")+
-  geom_text(aes(label=(Total_Orders)), vjust=-0.5, size=2.8)+
+# Create a bar chart showing the number of orders by sport
+ggplot(KPI_sports, aes(x = sport, y = Total_Orders, fill = sport)) +
+  geom_bar(stat = "identity") +   # Draw bars using the number of orders
+  geom_text(aes(label = Total_Orders),  # Add order count labels above the bars
+            vjust = -0.5, size = 2.8) +
   labs(
-    title= "Number of Orders by Sport",
-    x= "Sport",
-    y= "Number of orders")+
-  theme_minimal()+
-  theme(plot.title = element_text(hjust=0.5))
+    title = "Number of Orders by Sport",  # Chart title
+    x = "Sport",                          # Label for x-axis
+    y = "Number of Orders"                # Label for y-axis
+  ) +
+  theme_minimal() +                       # Use a simple clean theme
+  theme(plot.title = element_text(hjust = 0.5))  # Center the title
 
 ```
 
-**2.4 Profit Margin by Sport**
+**5.4 Profit Margin by Sport**
 ```{r}
-ggplot(KPI_sports, aes(x=sport, y=Profit_Margin, fill=sport))+
-  geom_bar(stat="identity")+
-  geom_text(aes(label=percent(Profit_Margin/100), vjust=-0.2))+
-  labs( title="Profit Margin by Sport",
-        x="sport",
-        y="Profit Margin")+
-  theme(plot.title = element_text(hjust= 0.5))
+# Create a bar chart showing profit margin by sport
+ggplot(KPI_sports, aes(x = sport, y = Profit_Margin, fill = sport)) +
+  geom_bar(stat = "identity") +   # Draw bars using the profit margin values
+  geom_text(aes(label = percent(Profit_Margin / 100)),  # Add profit margin labels
+            vjust = -0.2) +
+  labs(
+    title = "Profit Margin by Sport",  # Chart title
+    x = "Sport",                       # Label for x-axis
+    y = "Profit Margin"                # Label for y-axis
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))  # Center the chart title
 
 ```
 
 
-**2.5 Comments:**
+**5.5 Comments:**
 
 
 - All sports have profit margins above 60%, indicating strong overall profitability.
@@ -190,101 +224,112 @@ ggplot(KPI_sports, aes(x=sport, y=Profit_Margin, fill=sport))+
 - **Recommendation:**  
 Consider reallocating marketing resources to **Hockey** and **Baseball** to boost volume, as they have strong performance potential. Additionally, analyze Basketball’s pricing and cost structure to increase margins without sacrificing volume.
 
-### **3) Customer ratings: number, percentage of ratings from all orders, average rating.**
+### **6) Customer ratings: number, percentage of ratings from all orders, average rating.**
 ```{r}
-
-Customer_Ratings<-
-    orders%>% # Start with the 'orders' table
-    summarise(Average_Rating=round(mean(rating, na.rm=TRUE),2),  # Calculate the average rating (excluding NAs)
-    Total_Rating=sum(!is.na(rating)),# Count the number of non-missing ratings
-    Percentage_rating= round((Total_Rating/2847)*100,2))  # Calculate percentage of orders with ratings
-
-
-
-kable(Customer_Ratings)   # Display the summarized ratings info
-
-
+# Calculate customer rating metrics
+Customer_Ratings <- 
+  orders %>%  # Start with the orders dataset
+  summarise(
+    Average_Rating = round(mean(rating, na.rm = TRUE), 2),  # Calculate average rating (ignore missing values)
+    Total_Rating = sum(!is.na(rating)),  # Count how many ratings exist
+    Percentage_rating = round((Total_Rating / 2847) * 100, 2)  # Percentage of orders with ratings
+  )
+# Display the results in a table
+kable(Customer_Ratings)
 ```
 
 
 
-- **Average Rating:** 3.13  
+- **6.1 Average Rating:** 3.13  
 The average customer rating across all orders is 3.13 out of 5, indicating a moderate level of customer satisfaction.
 
-- **Total Ratings Submitted:** 1,193  
+- **6.2 Total Ratings Submitted:** 1,193  
 Out of 2,847 total orders, 1,193 included a customer rating.
 
-- **Percentage of Orders with Ratings:** 41.9%  
+- **6.3 Percentage of Orders with Ratings:** 41.9%  
 Only 41.9% of customers submitted a rating, suggesting that the business may benefit from encouraging more feedback to better evaluate customer experience.
 
-- **Recommendation:**  
+- **6.4 Recommendation:**  
 Implement post-purchase incentives such as small discounts, loyalty points, or thank-you emails to encourage more customers to leave ratings. Increasing feedback volume will provide better insights for improving products and service.
 
 
-### **4) Ratings distribution: number of orders by rating, revenue by rating, profit by rating, and profit margin by rating.**
+### **7) Ratings distribution: number of orders by rating, revenue by rating, profit by rating, and profit margin by rating.**
 
 ```{r}
-rating_distribution<-orders %>% # Use orders data
+# Analyze orders by rating category
+rating_distribution <- orders %>%   # Start with the orders dataset
   mutate(
-    rating = as.character(rating),  # First convert it to text.
-    rating = replace_na(rating, "No rating"), # replace NA to "No rating provided"
-    rating = factor(rating, levels = c("5", "4", "3", "2", "1", "No rating"))
+    rating = as.character(rating),                 # Convert rating to text
+    rating = replace_na(rating, "No rating"),      # Replace missing ratings with "No rating"
+    rating = factor(rating, levels = c("5", "4", "3", "2", "1", "No rating"))  # Set rating order
   ) %>%
-  group_by(rating) %>% summarise(orders_by_ratings=n(),    # Group by rating value
-    revenue_by_rating=sum(revenue),                        # Count orders per rating
-    profit_by_rating=sum(profit),                          # Sum revenue per rating
-  profit_margin=round((profit_by_rating/revenue_by_rating)*100,2))%>% # Profit margin % per rating
-  arrange(desc(rating))                                    # Sort by rating descending
-                                     
-kable(rating_distribution)                                        # Show results
+  group_by(rating) %>%                             # Group data by rating value
+  summarise(
+    orders_by_ratings = n(),                       # Count number of orders per rating
+    revenue_by_rating = sum(revenue),              # Calculate total revenue per rating
+    profit_by_rating = sum(profit),                # Calculate total profit per rating
+    profit_margin = round((profit_by_rating / revenue_by_rating) * 100, 2)  # Profit margin (%)
+  ) %>%
+  arrange(desc(rating))                            # Sort ratings from highest to lowest
+# Display the results as a table
+kable(rating_distribution)
 ```
 
 
-**4.1 Orders by rating**
+**7.1 Orders by rating**
 
 ```{r}
-ggplot(rating_distribution, aes(x=rating, y=orders_by_ratings, fill=rating))+
-  geom_bar(stat = "identity")+
-  geom_text(aes(label = orders_by_ratings, vjust=-0.2))+
-  theme_bw()+
-  labs(title = "Number of orders by Rating",
-       x="Ratings",
-       y="orders")+
-  theme(plot.title = element_text(hjust = 0.5))
-```
-
-
-**4.2 Profit by rating**
-```{r}
-
-ggplot(rating_distribution, aes(x=rating, y=profit_by_rating, fill=rating)) +
-  geom_bar (stat="identity")+
-  geom_text(aes(label = dollar(profit_by_rating)), vjust=-0.5, size=3) +
-  theme_bw()+
-  labs(title= "Profit by Rating",
-         x= "Rating",
-         y="Profit")+
-  theme(plot.title = element_text(hjust = 0.5))
-```
-
-
-**4.3 Revenue by rating**
-
-```{r}
-
-ggplot(rating_distribution, aes(x=rating, y=revenue_by_rating, fill=rating))+
-  geom_bar(stat="identity")+
-  geom_text(aes(label=dollar(revenue_by_rating)), vjust=-0.2,size=3.2)+
-  theme_bw()+
+# Create a bar chart showing the number of orders by rating
+ggplot(rating_distribution, aes(x = rating, y = orders_by_ratings, fill = rating)) +
+  geom_bar(stat = "identity") +   # Draw bars using the number of orders
+  geom_text(aes(label = orders_by_ratings),  # Add order count labels above bars
+            vjust = -0.2) +
+  theme_bw() +   # Use a black-and-white theme
   labs(
-    title="Revenue by Rating",
-    x="Rating",
-    y="Revenue"
-  )+
-  theme(plot.title =element_text(hjust = 0.5) )
+    title = "Number of Orders by Rating",  # Chart title
+    x = "Ratings",                         # Label for x-axis
+    y = "Orders"                           # Label for y-axis
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))  # Center the chart title
 ```
 
-**4.4 Comments:**
+
+**7.2 Profit by rating**
+```{r}
+
+# Create a bar chart showing profit by rating
+ggplot(rating_distribution, aes(x = rating, y = profit_by_rating, fill = rating)) +
+  geom_bar(stat = "identity") +   # Draw bars using profit values
+  geom_text(aes(label = dollar(profit_by_rating)),  # Add profit labels above bars
+            vjust = -0.5, size = 3) +
+  theme_bw() +   # Use a black-and-white theme
+  labs(
+    title = "Profit by Rating",   # Chart title
+    x = "Rating",                 # Label for x-axis
+    y = "Profit"                  # Label for y-axis
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))  # Center the chart title
+```
+
+
+**7.3 Revenue by rating**
+
+```{r}
+# Create a bar chart showing revenue by rating
+ggplot(rating_distribution, aes(x = rating, y = revenue_by_rating, fill = rating)) +
+  geom_bar(stat = "identity") +   # Draw bars using revenue values
+  geom_text(aes(label = dollar(revenue_by_rating)),  # Add revenue labels above bars
+            vjust = -0.2, size = 3.2) +
+  theme_bw() +   # Use a black-and-white theme
+  labs(
+    title = "Revenue by Rating",  # Chart title
+    x = "Rating",                 # Label for x-axis
+    y = "Revenue"                 # Label for y-axis
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))  # Center the chart title
+```
+
+**7.4 Comments:**
 
 - **High number of unrated orders:**  
   The majority of orders (1,654) have no rating, indicating many customers do not provide feedback.
@@ -299,78 +344,95 @@ ggplot(rating_distribution, aes(x=rating, y=revenue_by_rating, fill=rating))+
   Rating 3 orders have higher profit margins than both ratings 4 and 5, which is unexpected.
 
 
-- **Recommendation:**  
+- **7.5 Recommendation:**  
   Investigate product categories and pricing strategies by rating to better understand these patterns and improve customer feedback collection.
 
-### **5) Analyze revenue, profit, and profit margin by state.**
+### **8) Analyze revenue, profit, and profit margin by state.**
 
-**5.1 Best profiability efficiency (Top 3)**
+**8.1 Best profiability efficiency (Top 3)**
 ```{r}
-
-profiability_efficiency<-inner_join(orders, customer, by="customer_id") %>% # Join orders with customer data by customer_id
-  group_by(State) %>%                             # Group data by State
-  summarise(Revenue_by_state= sum(revenue),       # Sum revenue per state
-    profit_by_state = sum(profit),                # Sum profit per state
-    profit_margin= round((profit_by_state/Revenue_by_state)*100,2)) %>%  # Calculate profit margin % per state
-  mutate(rank_by_margin = as.integer(dense_rank(desc(profit_margin)))) %>%  # Rank states by descending profit margin
-  arrange(rank_by_margin) %>%  # Order by rank (top margins first)
-  filter(rank_by_margin<=3)     # Keep only top 3 states by profit margin
-
+# Analyze profitability efficiency by state
+# Join orders with customer data
+profiability_efficiency <- inner_join(orders, customer, by = "customer_id") %>%  
+  group_by(State) %>%   # Group the data by state
+  summarise(
+    Revenue_by_state = sum(revenue),      # Total revenue for each state
+    profit_by_state = sum(profit),        # Total profit for each state
+    profit_margin = round((profit_by_state / Revenue_by_state) * 100, 2)  # Profit margin (%)
+  ) %>%
+  mutate(
+    rank_by_margin = as.integer(dense_rank(desc(profit_margin)))  # Rank states by profit margin
+  ) %>%
+  arrange(rank_by_margin) %>%   # Sort by rank (highest margin first)
+  filter(rank_by_margin <= 3)   # Keep only the top 3 states
+# Display the results as a table
 kable(profiability_efficiency)
 ```
 
-**5.2 Highest revenue and profit (top 3).**
+**8.2 Highest revenue and profit (top 3).**
 ```{r}
-H_Revenue_Profit<-inner_join(orders, customer, by= "customer_id") %>%  # Join orders with customers by customer_id
-      group_by(State) %>%      # Group data by State
-      summarise(profit_state= sum(profit),  # Total profit per state
-        revenue_state= sum(revenue),# Total revenue per state
-        profit_margin= round( (profit_state/revenue_state)*100,2))%>% # Profit margin % per state
-      arrange(desc(profit_state), desc(revenue_state)) %>% # Sort by highest profit, then revenue
-      mutate(rank=row_number())%>% # Assign rank based on sorting
-      filter(rank<=3)     # Keep top 3 states by profit
-
+# Identify the top 3 states by profit and revenue
+# Join orders with customer data
+H_Revenue_Profit <- inner_join(orders, customer, by = "customer_id") %>%  
+  group_by(State) %>%   # Group the data by state
+  summarise(
+    profit_state = sum(profit),       # Total profit for each state
+    revenue_state = sum(revenue),     # Total revenue for each state
+    profit_margin = round((profit_state / revenue_state) * 100, 2)  # Profit margin (%)
+  ) %>%
+  arrange(desc(profit_state), desc(revenue_state)) %>%  # Sort by highest profit and revenue
+  mutate(rank = row_number()) %>%  # Create ranking based on the sorted results
+  filter(rank <= 3)  # Keep only the top 3 states
+# Show the results in a table
 kable(H_Revenue_Profit)
 ```
 
-**5.3 least profitable and least revenue**
+**8.3 least profitable and least revenue**
 ```{r}
-L_profitable_revenue<-inner_join(orders, customer, by="customer_id")%>% # Join orders and customers on customer_id
-group_by(State) %>%                  # Group data by State
-summarise(profit_state= sum(profit), # Sum of profit per state
-  revenue_state= sum(revenue),       # Sum of revenue per state
-  profit_margin= round( (profit_state/revenue_state)*100,2)) %>% # Profit margin % per state
-arrange(profit_state, revenue_state)%>% #Sort by profit and revenue
-mutate(rank= row_number()) %>%          # Assign rank based on sorted order
-filter(rank<=3)                         # Keep only top 3 (lowest profit) states
-
+# Identify the 3 states with the lowest profit and revenue
+# Join orders with customer data
+L_profitable_revenue <- inner_join(orders, customer, by = "customer_id") %>%  
+  group_by(State) %>%   # Group the data by state
+  summarise(
+    profit_state = sum(profit),   # Total profit for each state
+    revenue_state = sum(revenue), # Total revenue for each state
+    profit_margin = round((profit_state / revenue_state) * 100, 2)  # Profit margin (%)
+  ) %>%
+  arrange(profit_state, revenue_state) %>%  # Sort by lowest profit and revenue
+  mutate(rank = row_number()) %>%  # Assign rank based on sorted results
+  filter(rank <= 3)  # Keep the 3 states with the lowest profit
+# Display the results as a table
 kable(L_profitable_revenue)
 ```
-**5.4 Smaller states like Delaware and New Hampshire show high margins despite lower total revenue.**
+**8.4 Smaller states like Delaware and New Hampshire show high margins despite lower total revenue.**
 ```{r}
-small_States<-inner_join(orders, customer, by="customer_id")%>% # Join orders with customer data on customer_id
-group_by(State) %>%                               # Group data by State
-summarise(profit_state= sum(profit),              # Sum profit for each state
-  revenue_state= sum(revenue),                    # Sum revenue for each state
-  profit_margin= round( (profit_state/revenue_state)*100,2)) %>%   # Calculate profit margin (%) per state
-arrange( desc(profit_margin)) %>%                 # Sort states by profit margin, highest first
-mutate(Rank=rank(row_number()))%>%
-filter(Rank==4 | Rank == 5)
-  
+# Find states ranked 4 and 5 by profit margin
+# Join orders with customer data
+small_States <- inner_join(orders, customer, by = "customer_id") %>%  
+  group_by(State) %>%   # Group the data by state
+  summarise(
+    profit_state = sum(profit),       # Total profit for each state
+    revenue_state = sum(revenue),     # Total revenue for each state
+    profit_margin = round((profit_state / revenue_state) * 100, 2)  # Profit margin (%)
+  ) %>%
+  arrange(desc(profit_margin)) %>%  # Sort states by highest profit margin
+  mutate(Rank = row_number()) %>%   # Create ranking based on margin
+  filter(Rank == 4 | Rank == 5)  # Keep states ranked 4 and 5
+# Show the results in a table
 kable(small_States)
 ```
 
-**5.5 Comments:**
+**8.5 Comments:**
 
 - Utah, Massachusetts, and New Mexico have the best profit efficiency.
 - California, Texas, and Florida rank highest in both Revenue and Profit, but not in margin.
 - Maine and Rhode Island are at the bottom in all three metrics: least profitable and least revenue.
 - Smaller states like Delaware and New Hampshire show high margins despite lower total revenue.
 
-- **Recommendation:**  
+- **8.6 Recommendation:**  
 Focus on improving operational efficiency in large-volume states like California, Texas, and Florida to enhance profit margins. Additionally, investigate strategies to boost sales in underperforming states like Maine and Rhode Island, potentially through targeted promotions or revised product offerings.
 
-### **6) Monthly profit trends and month-over-month comparisons.**
+### **9) Monthly profit trends and month-over-month comparisons.**
 
 I first create a new column called Month_trend by extracting the month number from the New_date column. Then, I replace those numeric month values with their full month names using recode(). This way, my Month_trend column is easier to understand because it shows names like "January" instead of just numbers.
 
@@ -410,7 +472,7 @@ Monthly_Trend<-orders  %>%
                    "November",                               
                    "December"))) %>%
           group_by(Month_trend) %>% # Group data by Month_trend
-          summarise(Monthly_Profit= sum(profit))# Calculate total profit per month  
+          summarise(Monthly_Profit= sum(profit))# Total profit per month  
 
 kable(Monthly_Trend) # View summarized monthly profit data
 
@@ -419,19 +481,21 @@ kable(Monthly_Trend) # View summarized monthly profit data
 **Monthly Profit Trend Graphic**
 
 ```{r}
+# Create a chart showing monthly profit trends
 ggplot(Monthly_Trend, aes(x = Month_trend, y = Monthly_Profit)) +
-  geom_bar(stat = "identity", fill = "lightblue") +
-  geom_line(aes(group = 1), color = "yellow", size = 1.2) +
-  geom_point(color = "blue", size = 3) +
-  theme_dark()  +
-    theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    plot.title = element_text(hjust = 0.5)  
+  geom_bar(stat = "identity", fill = "lightblue") +  #Bars showing monthly profit
+  geom_line(aes(group = 1), color = "yellow", size = 1.2) +  #Line to show the trend
+  geom_point(color = "blue", size = 3) +  # Add points to highlight each month
+  theme_dark() +  # Use a dark theme for the chart
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),# Rotate month labels
+    plot.title = element_text(hjust = 0.5)  # Center the chart title
   ) +
+  
   labs(
-    title="Monthly Profit Trends",
-    x= "Month",
-    y="Profit"
+    title = "Monthly Profit Trends",  # Chart title
+    x = "Month",                      # Label for x-axis
+    y = "Profit"                      # Label for y-axis
   )
 
 
@@ -457,7 +521,7 @@ ggplot(Monthly_Trend, aes(x = Month_trend, y = Monthly_Profit)) +
 - Overall, there is clear seasonality with peaks in late spring/early summer and dips in late fall/early year.
 
 
-### **7) Monthly Revenue trends and month-over-month comparisons.**
+### **10) Monthly Revenue trends and month-over-month comparisons.**
 ```{r}
 
 Revenue_Trend<-orders %>% 
@@ -500,16 +564,21 @@ Revenue_Trend
 
 
 ```{r}
-ggplot(Revenue_Trend, aes(x=Month_trend,y=Revenue))+
-      geom_bar(stat = "identity", fill="lightblue") +
-      geom_line(aes(group=1), color="yellow", size=1.2) +
-      geom_point(color= "blue", size=3) +theme_dark()+
-      theme( axis.text.x = element_text(angle= 45, hjust=1),
-             plot.title = element_text (hjust = 0.5))+
-       labs( title= "Monthly Revenue Trend",
-        x= " Month",
-        y="Revenue")
-
+# Create a chart showing the monthly revenue trend
+ggplot(Revenue_Trend, aes(x = Month_trend, y = Revenue)) +
+  geom_bar(stat = "identity", fill = "lightblue") +  # Create bars showing revenue per month
+  geom_line(aes(group = 1), color = "yellow", size = 1.2) +  #Line to show the trend
+  geom_point(color = "blue", size = 3) +  # Add points for each month
+  theme_dark() +  # Use a dark theme for the chart
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),# Rotate month labels
+    plot.title = element_text(hjust = 0.5)# Center the chart title
+  ) +
+  labs(
+    title = "Monthly Revenue Trend",  # Chart title
+    x = "Month",          # Label for x-axis
+    y = "Revenue"         # Label for y-axis
+  )
 ```
 - June had the highest revenue ($56,407), marking peak business in early summer.
 
@@ -529,7 +598,7 @@ ggplot(Revenue_Trend, aes(x=Month_trend,y=Revenue))+
 
 - Overall, the data reveals clear seasonality with strong spring and early summer performance.
 
-### **Conclussion**
+## **11) Executive Summary**
 
 The business demonstrates strong profitability with an average profit margin of 62%, highlighting sports such as soccer and basketball for their volume and profit margins.
 
@@ -540,4 +609,3 @@ Geographically, states like Utah and Massachusetts stand out for margin efficien
 Seasonality is evident, with peaks in spring and summer (April to June) and notable declines in winter and fall, especially in November.
 
 It is recommended to focus marketing campaigns during peak months and investigate the causes of low profitability in underperforming states and months.
-
