@@ -4,11 +4,14 @@
 
 **Author:** Sebastián Ortuño
 
-In this project, I use R to analyze and clean data from an online sports store. The goal is to answer key business questions and extract insights on revenue, profit, customer ratings, and geographic trends.
+In this project, I use R to analyze and clean data from an online sports store. The goal is to answer key business questions and find useful insights about revenue, profit, customer ratings, and sales by state.
 
-Additionally, I created an interactive Tableau dashboard to gain a deeper understanding of the data. You can explore it here:  
-https://public.tableau.com/app/profile/sebastian.ortuno.barrero/viz/SportsSalesCustomerAnalysis/RatingsDashboard?publish=y
+Additionally, I created an interactive Tableau dashboard to better understand the data. You can explore it here:
+**https://public.tableau.com/app/profile/sebastian.ortuno.barrero/viz/SportsSalesCustomerAnalysis/RatingsDashboard?publish=y**
 
+This project tries to solve an important business problem: understanding what parts of the business are performing well and what parts need improvement. By looking at sales, profit, customer ratings, and location data, I try to find which sports bring the most value, which states have better results, and where the company may have opportunities to grow.
+
+This project also tries to solve the problem of limited visibility in business performance over time. By studying monthly revenue and profit trends, I try to find patterns during the year, compare strong and weak months, and understand customer behavior better. These results can help the business make better decisions about marketing, sales, and future planning.
 
 ---
 
